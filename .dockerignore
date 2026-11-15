@@ -1,0 +1,9 @@
+.git
+.github
+APK/
+*.apk
+.gradle
+.idea
+DriveMate-Flutter-App/
+Database/
+push_to_github.bat
