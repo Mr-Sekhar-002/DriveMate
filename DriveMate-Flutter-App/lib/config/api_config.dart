@@ -23,10 +23,10 @@ class ApiConfig {
   static const String apiPrefix = '/drivemate-api/public/index.php/api';
 
   /// Default Render cloud URL template for DriveMate
-  static const String defaultRenderUrl = 'https://drivemate-api.onrender.com/api';
+  static const String defaultRenderUrl = 'https://drivemate-vrr6.onrender.com/api';
 
-  /// Active environment setting (Defaults to LAN for local testing, switches seamlessly to Render)
-  static ApiEnvironment activeEnvironment = ApiEnvironment.lan;
+  /// Active environment setting (Defaults to live Render Cloud backend)
+  static ApiEnvironment activeEnvironment = ApiEnvironment.render;
 
   /// Optional custom override (can be set dynamically in settings or debugging)
   static String? customBaseUrlOverride;
