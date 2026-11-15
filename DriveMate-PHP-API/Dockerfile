@@ -25,16 +25,16 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader || tru
 # Ensure Apache allows .htaccess overrides
 RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
-# Support Render dynamic PORT environment variable (default 80 if not set)
-RUN echo 'Listen ${PORT:-80}' > /etc/apache2/ports.conf
-RUN sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT:-80}>/g' /etc/apache2/sites-available/000-default.conf
-
 # Set permissions for Apache
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html \
     && mkdir -p /var/www/html/logs /var/www/html/uploads \
     && chmod -R 777 /var/www/html/logs /var/www/html/uploads
 
+# Setup entrypoint script for dynamic Render port binding
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
