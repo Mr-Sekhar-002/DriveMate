@@ -1,0 +1,34 @@
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+
+# Build directories
+build/
+**/build/
+.dart_tool/
+**/.dart_tool/
+
+# IDE files
+.idea/
+**/.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Gradle & Kotlin
+.gradle/
+**/.gradle/
+.kotlin/
+local.properties
+**/local.properties
+
+# Logs
+*.log
+**/logs/*.log
+
+# Environment & Secret files
+.env
+**/.env

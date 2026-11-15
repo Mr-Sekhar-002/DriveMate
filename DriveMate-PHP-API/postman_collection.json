@@ -1,0 +1,370 @@
+{
+  "info": {
+    "name": "DriveMate Enterprise API Collection",
+    "description": "Production-grade Postman collection for the DriveMate On-Demand Chauffeur & Car Rental Platform. Features automatic Bearer Token capture upon login and complete coverage for Auth, Drivers, Rentals, Bookings, Trips, OpenStreetMap, and Multi-Method Payments.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/drivemate-api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication & Security",
+      "item": [
+        {
+          "name": "Login User (Auto-captures Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "    console.log('JWT Token successfully set!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@drivemate.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"]}
+          }
+        },
+        {
+          "name": "Register Customer / Driver",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Amit Kumar\",\n  \"email\": \"amit@example.com\",\n  \"phone\": \"9876500001\",\n  \"password\": \"Password@123\",\n  \"role\": \"customer\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"]}
+          }
+        },
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9876543210\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/auth/send-otp", "host": ["{{base_url}}"], "path": ["auth", "send-otp"]}
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9876543210\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/auth/verify-otp", "host": ["{{base_url}}"], "path": ["auth", "verify-otp"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. OpenStreetMap & Routing",
+      "item": [
+        {
+          "name": "Calculate Fare (OSRM Road Distance)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickup\": \"Kolkata, West Bengal\",\n  \"destination\": \"Howrah, West Bengal\",\n  \"type\": \"hire_driver\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/maps/calculate-fare", "host": ["{{base_url}}"], "path": ["maps", "calculate-fare"]}
+          }
+        },
+        {
+          "name": "Live Autocomplete Suggestions (Pan-India)",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/maps/autocomplete?input=Airport", "host": ["{{base_url}}"], "path": ["maps", "autocomplete"], "query": [{"key": "input", "value": "Airport"}]}
+          }
+        },
+        {
+          "name": "Get Driving Route & Polyline",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/maps/directions?origin=Kolkata&destination=Howrah", "host": ["{{base_url}}"], "path": ["maps", "directions"], "query": [{"key": "origin", "value": "Kolkata"}, {"key": "destination", "value": "Howrah"}]}
+          }
+        },
+        {
+          "name": "Geocode Address",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/maps/geocode?address=Kolkata", "host": ["{{base_url}}"], "path": ["maps", "geocode"], "query": [{"key": "address", "value": "Kolkata"}]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Payments & Digital Wallet",
+      "item": [
+        {
+          "name": "Create UPI QR Order (Dynamic QR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 1,\n  \"amount\": 350.00,\n  \"payment_method\": \"upi\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/payments/create-order", "host": ["{{base_url}}"], "path": ["payments", "create-order"]}
+          }
+        },
+        {
+          "name": "Get In-App Wallet Balance & Ledger",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/payments/wallet", "host": ["{{base_url}}"], "path": ["payments", "wallet"]}
+          }
+        },
+        {
+          "name": "Add Money to Wallet (Top-up)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500.00\n}"
+            },
+            "url": {"raw": "{{base_url}}/payments/wallet/add-money", "host": ["{{base_url}}"], "path": ["payments", "wallet", "add-money"]}
+          }
+        },
+        {
+          "name": "Pay Booking via Wallet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 1,\n  \"amount\": 150.00,\n  \"payment_method\": \"wallet\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/payments/create-order", "host": ["{{base_url}}"], "path": ["payments", "create-order"]}
+          }
+        },
+        {
+          "name": "Record Driver Cash Collection",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 1,\n  \"amount\": 500.00\n}"
+            },
+            "url": {"raw": "{{base_url}}/payments/cash-collect", "host": ["{{base_url}}"], "path": ["payments", "cash-collect"]}
+          }
+        },
+        {
+          "name": "Get Itemized GST Tax Invoice",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/payments/invoice?booking_id=1", "host": ["{{base_url}}"], "path": ["payments", "invoice"], "query": [{"key": "booking_id", "value": "1"}]}
+          }
+        },
+        {
+          "name": "User Payment History",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/payments/history", "host": ["{{base_url}}"], "path": ["payments", "history"]}
+          }
+        },
+        {
+          "name": "Instant Booking Refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 1,\n  \"to_wallet\": true\n}"
+            },
+            "url": {"raw": "{{base_url}}/payments/refund", "host": ["{{base_url}}"], "path": ["payments", "refund"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Bookings & Trips",
+      "item": [
+        {
+          "name": "Create Chauffeur Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"hire_driver\",\n  \"driver_id\": 3,\n  \"start_date\": \"2026-10-10 10:00:00\",\n  \"pickup_location\": \"Salt Lake Sector V, Kolkata\",\n  \"destination\": \"Howrah Railway Station\",\n  \"total_amount\": 450.00\n}"
+            },
+            "url": {"raw": "{{base_url}}/bookings/create", "host": ["{{base_url}}"], "path": ["bookings", "create"]}
+          }
+        },
+        {
+          "name": "My Bookings List",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/bookings/my", "host": ["{{base_url}}"], "path": ["bookings", "my"]}
+          }
+        },
+        {
+          "name": "Start Trip",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 1,\n  \"start_latitude\": 22.5726,\n  \"start_longitude\": 88.3639\n}"
+            },
+            "url": {"raw": "{{base_url}}/trips/start", "host": ["{{base_url}}"], "path": ["trips", "start"]}
+          }
+        },
+        {
+          "name": "Update Driver Live GPS",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trip_id\": 1,\n  \"latitude\": 22.5800,\n  \"longitude\": 88.3700\n}"
+            },
+            "url": {"raw": "{{base_url}}/trips/update-location", "host": ["{{base_url}}"], "path": ["trips", "update-location"]}
+          }
+        },
+        {
+          "name": "Complete Trip",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trip_id\": 1,\n  \"distance_km\": 12.5,\n  \"fare\": 550.00\n}"
+            },
+            "url": {"raw": "{{base_url}}/trips/complete", "host": ["{{base_url}}"], "path": ["trips", "complete"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Drivers & Vehicles",
+      "item": [
+        {
+          "name": "List Available Verified Drivers",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/drivers/available", "host": ["{{base_url}}"], "path": ["drivers", "available"]}
+          }
+        },
+        {
+          "name": "Driver Profile & Earnings",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/drivers/earnings", "host": ["{{base_url}}"], "path": ["drivers", "earnings"]}
+          }
+        },
+        {
+          "name": "List Available Rental Cars",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/cars/available", "host": ["{{base_url}}"], "path": ["cars", "available"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Admin & Support",
+      "item": [
+        {
+          "name": "Platform Settings (Rates & UPI)",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/settings", "host": ["{{base_url}}"], "path": ["settings"]}
+          }
+        },
+        {
+          "name": "Admin Revenue & Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/admin/reports/analytics", "host": ["{{base_url}}"], "path": ["admin", "reports", "analytics"]}
+          }
+        },
+        {
+          "name": "Submit Support Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Invoice clarification\",\n  \"category\": \"payment\",\n  \"message\": \"Need assistance regarding GST calculation for booking #1\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/support/create-ticket", "host": ["{{base_url}}"], "path": ["support", "create-ticket"]}
+          }
+        }
+      ]
+    }
+  ]
+}

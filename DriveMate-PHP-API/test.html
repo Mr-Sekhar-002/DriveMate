@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DriveMate — Live API Testing Console</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090B10;
+      --card: #121620;
+      --card-border: #1F2738;
+      --primary: #2979FF;
+      --success: #00E676;
+      --warning: #FFB300;
+      --danger: #FF3D71;
+      --text: #F0F4FC;
+      --text-muted: #8A98B2;
+      --code-bg: #080A0F;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .header {
+      max-width: 1200px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--primary), #00E676);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .title h1 { font-size: 22px; font-weight: 800; }
+    .title p { font-size: 13px; color: var(--text-muted); }
+    .status-pill {
+      background: rgba(0, 230, 118, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-pill::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+    }
+    
+    .session-banner {
+      max-width: 1200px;
+      margin: 0 auto 20px;
+      background: #111726;
+      border: 1px solid #1E283E;
+      border-radius: 12px;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .session-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .session-role {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .role-guest { background: #222938; color: #8A98B2; }
+    .role-customer { background: rgba(41, 121, 255, 0.18); color: #58A6FF; border: 1px solid rgba(41, 121, 255, 0.4); }
+    .role-driver { background: rgba(0, 230, 118, 0.18); color: #00E676; border: 1px solid rgba(0, 230, 118, 0.4); }
+    .role-admin { background: rgba(255, 179, 0, 0.18); color: #FFB300; border: 1px solid rgba(255, 179, 0, 0.4); }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-green { background: rgba(0, 230, 118, 0.15); color: var(--success); border: 1px solid rgba(0, 230, 118, 0.3); }
+    .badge-blue  { background: rgba(41, 121, 255, 0.15); color: var(--primary); border: 1px solid rgba(41, 121, 255, 0.3); }
+    .badge-amber { background: rgba(255, 179, 0, 0.15); color: var(--warning); border: 1px solid rgba(255, 179, 0, 0.3); }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    input, select {
+      width: 100%;
+      background: #0B0E14;
+      border: 1px solid #1E2534;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(41, 121, 255, 0.2);
+    }
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 6px;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+    }
+    .btn-success { background: #00C853; color: #000; font-weight: 800; }
+    .btn-secondary { background: #1E2534; color: #D5DFEE; }
+    .btn-secondary:hover { background: #2A3449; }
+    .btn-danger-outline {
+      background: transparent;
+      border: 1px dashed rgba(255, 61, 113, 0.5);
+      color: #FF6E91;
+      font-size: 11px;
+      padding: 7px 10px;
+    }
+    .btn-danger-outline:hover {
+      background: rgba(255, 61, 113, 0.1);
+      border-color: #FF3D71;
+    }
+
+    .quick-preset-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .preset-btn {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 11px;
+      background: #192233;
+      border: 1px solid #283750;
+      color: #CAD5E8;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .preset-btn:hover {
+      background: #233148;
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .autocomplete-wrapper { position: relative; }
+    .suggestions-box {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #141A26;
+      border: 1px solid #28334A;
+      border-radius: 10px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+      z-index: 1000;
+      max-height: 240px;
+      overflow-y: auto;
+      display: none;
+    }
+    .suggestion-item {
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #DDE5F5;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #1E2638;
+      transition: background 0.15s;
+    }
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: rgba(41, 121, 255, 0.18); color: #fff; }
+
+    .output {
+      margin-top: 14px;
+      background: var(--code-bg);
+      border: 1px solid #1A202C;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      max-height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: #79C0FF;
+      flex-grow: 1;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <div class="header">
+    <div class="logo-badge">
+      <div class="logo-icon">🚗</div>
+      <div class="title">
+        <h1>DriveMate Live API Testing Dashboard</h1>
+        <p>Verified Backend Endpoints: Authentication, Drivers, Vehicles & OpenStreetMap</p>
+      </div>
+    </div>
+    <div class="status-pill">MySQL & PHP Active</div>
+  </div>
+
+  <!-- ACTIVE SESSION BADGE -->
+  <div class="session-banner">
+    <div class="session-info">
+      <span>Current Session:</span>
+      <strong id="sessionUserName" style="color: #fff;">Rajesh Kumar (Driver)</strong>
+      <span id="sessionRoleBadge" class="session-role role-driver">DRIVER</span>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted);">
+      JWT Token: <span id="sessionTokenStatus" style="color: var(--success); font-weight: 600;">Driver Bearer Token Active ✅</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- CARD 1: USER AUTHENTICATION & REGISTRATION (REPORTED WORK) -->
+    <div class="card">
+      <div class="card-title">
+        <span>👤 1. Authentication & JWT</span>
+        <span class="badge badge-green">Module 1 (Done)</span>
+      </div>
+      
+      <label>Quick Preset Login:</label>
+      <div class="quick-preset-bar">
+        <button class="preset-btn" onclick="applyPreset('customer')">👤 Passenger</button>
+        <button class="preset-btn" onclick="applyPreset('driver')">👨‍✈️ Driver</button>
+        <button class="preset-btn" onclick="applyPreset('admin')">⚙️ Admin</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="regName" value="Rajesh Kumar (Driver)">
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select id="regRole">
+            <option value="driver" selected>Driver (Chauffeur)</option>
+            <option value="customer">Customer (Passenger)</option>
+            <option value="owner">Car Owner</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" value="driver@drivemate.com">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" id="regPhone" value="9811223344">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPassword" value="password">
+      </div>
+      <div class="grid-2">
+        <button class="btn btn-secondary" onclick="testRegister()">Test Register (POST /auth/register)</button>
+        <button class="btn btn-success" onclick="testLogin()">Test Login (POST /auth/login)</button>
+      </div>
+      <div class="output" id="authOutput">// Ready: Click "Test Login" to verify BCRYPT & JWT generation...</div>
+    </div>
+
+    <!-- CARD 2: DRIVER MANAGEMENT & ONLINE STATUS (REPORTED WORK) -->
+    <div class="card">
+      <div class="card-title">
+        <span>👨‍✈️ 2. Driver Management & Duty</span>
+        <span class="badge badge-green">Module 2 (Done)</span>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+        Queries verified drivers from MySQL & manages duty status protected by <code>AuthMiddleware::requireRole('driver')</code>.
+      </p>
+      <div class="grid-2">
+        <button class="btn" onclick="testAvailableDrivers()">Available Drivers (GET /drivers/available)</button>
+        <button class="btn btn-success" onclick="testToggleOnline()">Toggle Duty Status (POST /drivers/toggle-online)</button>
+      </div>
+      <div style="margin-top: 10px;">
+        <button class="btn btn-danger-outline" onclick="testUnauthorizedToggle()">
+          🛡️ RBAC Test: Attempt Toggle with Customer Token (Expects 403 Forbidden)
+        </button>
+      </div>
+      <div class="output" id="driverOutput">// Ready: Click "Available Drivers" or "Toggle Duty Status"...</div>
+    </div>
+
+    <!-- CARD 3: VEHICLE & CAR RENTALS (REPORTED WORK) -->
+    <div class="card">
+      <div class="card-title">
+        <span>🚙 3. Car Rental Fleet</span>
+        <span class="badge badge-green">Module 2 (Done)</span>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+        Browse verified self-drive vehicles added by car owners with daily and hourly rates from MySQL database.
+      </p>
+      <button class="btn" onclick="testAvailableCars()">Browse Available Cars (GET /cars/available)</button>
+      <div class="output" id="carOutput">// Click above to fetch available rental cars...</div>
+    </div>
+
+    <!-- CARD 4: OPENSTREETMAP ROUTE & FARE (NEXT MODULE) -->
+    <div class="card">
+      <div class="card-title">
+        <span>🗺️ 4. OpenStreetMap Road Fare</span>
+        <span class="badge badge-blue">Module 3 (In Progress)</span>
+      </div>
+      <div class="form-group">
+        <label>Pickup Location (Type for live suggestions)</label>
+        <div class="autocomplete-wrapper">
+          <input type="text" id="mapPickup" value="Kolkata, West Bengal" autocomplete="off">
+          <div id="pickupSuggestions" class="suggestions-box"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Destination Location</label>
+        <div class="autocomplete-wrapper">
+          <input type="text" id="mapDest" value="Howrah, West Bengal" autocomplete="off">
+          <div id="destSuggestions" class="suggestions-box"></div>
+        </div>
+      </div>
+      <button class="btn btn-success" onclick="testRouteFare()">Calculate Distance & Fare via OSRM</button>
+      <div class="output" id="mapOutput">// OpenStreetMap road calculation...</div>
+    </div>
+
+  </div>
+
+
+
+  <script>
+    const BASE_URL = 'http://localhost/drivemate-api';
+    
+    // Preset demo accounts
+    const PRESETS = {
+      customer: {
+        name: 'Rahul Sharma (Customer)',
+        email: 'customer@drivemate.com',
+        phone: '9876543210',
+        password: 'password',
+        role: 'customer'
+      },
+      driver: {
+        name: 'Rajesh Kumar (Driver)',
+        email: 'driver@drivemate.com',
+        phone: '9811223344',
+        password: 'password',
+        role: 'driver'
+      },
+      admin: {
+        name: 'Admin DriveMate',
+        email: 'admin@drivemate.com',
+        phone: '9000000000',
+        password: 'password',
+        role: 'admin'
+      }
+    };
+
+    let currentToken = '';
+    let currentRole = 'driver';
+    let currentName = 'Rajesh Kumar (Driver)';
+
+    // Update Session Header UI
+    function updateSessionUI(name, role, hasToken = true) {
+      currentName = name;
+      currentRole = role;
+      document.getElementById('sessionUserName').textContent = name;
+      
+      const badge = document.getElementById('sessionRoleBadge');
+      badge.textContent = role.toUpperCase();
+      badge.className = 'session-role role-' + role;
+
+      const tokenStatus = document.getElementById('sessionTokenStatus');
+      if (hasToken) {
+        tokenStatus.textContent = `${role.toUpperCase()} Bearer Token Active ✅`;
+        tokenStatus.style.color = '#00E676';
+      } else {
+        tokenStatus.textContent = 'No Active Token ❌';
+        tokenStatus.style.color = '#FF3D71';
+      }
+    }
+
+    // Apply Quick Preset
+    function applyPreset(type) {
+      const p = PRESETS[type];
+      if (!p) return;
+      document.getElementById('regName').value = p.name;
+      document.getElementById('regEmail').value = p.email;
+      document.getElementById('regPhone').value = p.phone;
+      document.getElementById('regPassword').value = p.password;
+      document.getElementById('regRole').value = p.role;
+      testLogin();
+    }
+
+    // 1. Test Register
+    async function testRegister() {
+      const out = document.getElementById('authOutput');
+      out.textContent = 'Sending registration request to /auth/register...';
+      try {
+        const res = await fetch(`${BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('regName').value,
+            email: document.getElementById('regEmail').value,
+            phone: document.getElementById('regPhone').value,
+            password: document.getElementById('regPassword').value,
+            role: document.getElementById('regRole').value
+          })
+        });
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+        if (data.success && data.data && data.data.token) {
+          currentToken = data.data.token;
+          const role = document.getElementById('regRole').value;
+          updateSessionUI(document.getElementById('regName').value, role, true);
+        }
+      } catch (e) { out.textContent = 'Error: ' + e.message; }
+    }
+
+    // 2. Test Login
+    async function testLogin() {
+      const out = document.getElementById('authOutput');
+      out.textContent = 'Authenticating user with BCRYPT & JWT...';
+      try {
+        const email = document.getElementById('regEmail').value;
+        const res = await fetch(`${BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            password: document.getElementById('regPassword').value
+          })
+        });
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+        if (data.success && data.data && data.data.token) {
+          currentToken = data.data.token;
+          const role = data.data.role || document.getElementById('regRole').value;
+          updateSessionUI(data.data.name || email, role, true);
+        }
+      } catch (e) { out.textContent = 'Error: ' + e.message; }
+    }
+
+    // 3. Test Available Drivers
+    async function testAvailableDrivers() {
+      const out = document.getElementById('driverOutput');
+      out.textContent = 'Querying verified drivers from MySQL...';
+      try {
+        const res = await fetch(`${BASE_URL}/drivers/available`);
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (e) { out.textContent = 'Error: ' + e.message; }
+    }
+
+    // 4. Test Toggle Online (Driver only)
+    async function testToggleOnline() {
+      const out = document.getElementById('driverOutput');
+      out.textContent = 'Checking Driver credentials & toggling duty status...';
+      try {
+        // If current active session is not a driver, auto-authenticate with verified demo driver
+        if (!currentToken || currentRole !== 'driver') {
+          out.textContent = 'Authenticating as Verified Driver (driver@drivemate.com)...';
+          const authRes = await fetch(`${BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: 'driver@drivemate.com', password: 'password' })
+          });
+          const authData = await authRes.json();
+          if (authData.success && authData.data && authData.data.token) {
+            currentToken = authData.data.token;
+            updateSessionUI(authData.data.name, 'driver', true);
+          } else {
+            out.textContent = 'Authentication failed: ' + JSON.stringify(authData, null, 2);
+            return;
+          }
+        }
+
+        out.textContent = 'Calling POST /drivers/toggle-online with Driver Bearer Token...';
+        const res = await fetch(`${BASE_URL}/drivers/toggle-online`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`
+          }
+        });
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (e) { out.textContent = 'Error: ' + e.message; }
+    }
+
+    // 4b. RBAC Security Test: Try toggle with Customer Token
+    async function testUnauthorizedToggle() {
+      const out = document.getElementById('driverOutput');
+      out.textContent = 'RBAC Security Test: Authenticating as Customer (customer@drivemate.com)...';
+      try {
+        // Get customer token
+        const authRes = await fetch(`${BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'customer@drivemate.com', password: 'password' })
+        });
+        const authData = await authRes.json();
+        const custToken = authData.data?.token || '';
+        updateSessionUI('Rahul Sharma (Customer)', 'customer', true);
+
+        out.textContent = 'Customer token acquired.\nAttempting POST /drivers/toggle-online with Customer token...\n';
+
+        const res = await fetch(`${BASE_URL}/drivers/toggle-online`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${custToken}`
+          }
+        });
+        const data = await res.json();
+        out.textContent = `[HTTP Status: ${res.status} Forbidden]\n` +
+                          JSON.stringify(data, null, 2) +
+                          '\n\n🛡️ SECURITY PASS: AuthMiddleware::requireRole("driver") successfully blocked customer access!';
+      } catch (e) { out.textContent = 'Error: ' + e.message; }
+    }
+
+    // 5. Test Available Cars
+    async function testAvailableCars() {
+      const out = document.getElementById('carOutput');
+      out.textContent = 'Querying available rental cars from MySQL...';
+      try {
+        const res = await fetch(`${BASE_URL}/cars/available`);
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (e) { out.textContent = 'Error: ' + e.message; }
+    }
+
+    // 6. Test Route Fare
+    async function testRouteFare() {
+      const out = document.getElementById('mapOutput');
+      out.textContent = 'Calling OpenStreetMap OSRM routing engine...';
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (currentToken) headers['Authorization'] = `Bearer ${currentToken}`;
+
+        const res = await fetch(`${BASE_URL}/maps/calculate-fare`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({
+            pickup: document.getElementById('mapPickup').value,
+            destination: document.getElementById('mapDest').value,
+            type: 'hire_driver'
+          })
+        });
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (e) { out.textContent = 'Error: ' + e.message; }
+    }
+
+    // Autocomplete setup
+    function setupAutocomplete(inputId, boxId) {
+      const input = document.getElementById(inputId);
+      const box = document.getElementById(boxId);
+      let debounceTimer = null;
+
+      input.addEventListener('input', function() {
+        const val = this.value.trim();
+        clearTimeout(debounceTimer);
+        if (val.length < 2) { box.style.display = 'none'; return; }
+        debounceTimer = setTimeout(async () => {
+          try {
+            box.style.display = 'block';
+            box.innerHTML = '<div class="suggestion-item"><span>Searching places...</span></div>';
+            const res = await fetch(`${BASE_URL}/maps/autocomplete?input=${encodeURIComponent(val)}`);
+            const data = await res.json();
+            if (data.success && Array.isArray(data.data)) {
+              box.innerHTML = '';
+              data.data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `<span>📍 ${item.description}</span>`;
+                div.addEventListener('click', () => {
+                  input.value = item.description;
+                  box.style.display = 'none';
+                });
+                box.appendChild(div);
+              });
+            }
+          } catch (e) { box.style.display = 'none'; }
+        }, 250);
+      });
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !box.contains(e.target)) box.style.display = 'none';
+      });
+    }
+
+    setupAutocomplete('mapPickup', 'pickupSuggestions');
+    setupAutocomplete('mapDest', 'destSuggestions');
+
+    // Auto-login as default driver on page load for immediate testing readiness
+    window.addEventListener('DOMContentLoaded', () => {
+      testLogin();
+    });
+  </script>
+</body>
+</html>

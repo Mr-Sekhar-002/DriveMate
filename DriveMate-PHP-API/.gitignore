@@ -1,0 +1,9 @@
+/vendor/
+.env
+/uploads/avatars/*
+!/uploads/avatars/.gitkeep
+/uploads/documents/*
+!/uploads/documents/.gitkeep
+composer.phar
+.DS_Store
+Thumbs.db

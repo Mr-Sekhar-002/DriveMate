@@ -1,0 +1,14 @@
+.git
+.idea
+backup_*
+tests
+*.bat
+*.ps1
+composer.phar
+logs/*.log
+drivemate_database.sql
+chat_history.*
+API_DOCUMENTATION.md
+PROJECT_PRD.md
+SECURITY_AUDIT.md
+ULTRA_PLAN.md
