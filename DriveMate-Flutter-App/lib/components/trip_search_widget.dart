@@ -193,14 +193,20 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark || AppColors.isDarkModeGlobal;
+    final cardBg = isDark ? AppColors.darkCardBg : AppColors.cardBgOf(context);
+    final borderSubtle = isDark ? AppColors.darkBorder : AppColors.borderSubtleOf(context);
+    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimaryOf(context);
+    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondaryOf(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBgOf(context),
+        color: cardBg,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.borderSubtleOf(context)),
+        border: Border.all(color: borderSubtle),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -210,7 +216,7 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Service Type Tabs
+          // Service Type Tabs (High-contrast for Dark & Light modes)
           Row(
             children: BookingType.values.map((type) {
               final isSelected = _selectedServiceType == type;
@@ -223,10 +229,15 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.navy900 : Colors.transparent,
+                      color: isSelected
+                          ? (isDark ? AppColors.primaryBlue : AppColors.navy900)
+                          : (isDark ? Colors.white.withOpacity(0.06) : Colors.transparent),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: isSelected ? AppColors.navy900 : Colors.grey.shade300,
+                        color: isSelected
+                            ? (isDark ? AppColors.cyanAccent : AppColors.navy900)
+                            : (isDark ? Colors.white24 : Colors.grey.shade300),
+                        width: isSelected ? 1.5 : 1,
                       ),
                     ),
                     child: Column(
@@ -237,7 +248,9 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
                               : type == BookingType.rentCar
                                   ? Icons.directions_car
                                   : Icons.car_rental,
-                          color: isSelected ? Colors.white : AppColors.navy700,
+                          color: isSelected
+                              ? Colors.white
+                              : (isDark ? Colors.white70 : AppColors.navy700),
                           size: 18,
                         ),
                         const SizedBox(height: 3),
@@ -245,8 +258,10 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
                           type.title,
                           style: TextStyle(
                             fontSize: 10,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                            color: isSelected ? Colors.white : AppColors.navy900,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                            color: isSelected
+                                ? Colors.white
+                                : (isDark ? Colors.white : AppColors.navy900),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -264,11 +279,11 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
           TextField(
             controller: _pickupController,
             onChanged: (val) => _onLocationQueryChanged(val, true),
-            style: TextStyle(fontSize: 13, color: AppColors.textPrimaryOf(context)),
+            style: TextStyle(fontSize: 13, color: textPrimary),
             decoration: InputDecoration(
               isDense: true,
               labelText: 'Pickup Location',
-              labelStyle: TextStyle(fontSize: 12, color: AppColors.textSecondaryOf(context)),
+              labelStyle: TextStyle(fontSize: 12, color: textSecondary),
               prefixIcon: const Icon(Icons.my_location, color: AppColors.successGreen, size: 20),
               suffixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -301,8 +316,8 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
                         ),
                 ],
               ),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderSubtle)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderSubtle)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.electricBlue, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
@@ -310,7 +325,7 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
 
           // Autocomplete Dropdown Overlay for Pickup
           if (_isSearchingPickup && _autocompleteSuggestions.isNotEmpty)
-            _buildSuggestionsList(),
+            _buildSuggestionsList(isDark),
 
           const SizedBox(height: 10),
 
@@ -318,19 +333,19 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
           TextField(
             controller: _destinationController,
             onChanged: (val) => _onLocationQueryChanged(val, false),
-            style: TextStyle(fontSize: 13, color: AppColors.textPrimaryOf(context)),
+            style: TextStyle(fontSize: 13, color: textPrimary),
             decoration: InputDecoration(
               isDense: true,
               labelText: 'Destination (Where to?)',
-              labelStyle: TextStyle(fontSize: 12, color: AppColors.textSecondaryOf(context)),
+              labelStyle: TextStyle(fontSize: 12, color: textSecondary),
               prefixIcon: const Icon(Icons.location_on, color: AppColors.errorRed, size: 20),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.map, size: 18, color: AppColors.electricBlue),
                 tooltip: 'Search Destination',
                 onPressed: _openDestinationSearchDialog,
               ),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderSubtle)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderSubtle)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.electricBlue, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
@@ -338,21 +353,21 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
 
           // Autocomplete Dropdown Overlay for Destination
           if (_isSearchingDest && _autocompleteSuggestions.isNotEmpty)
-            _buildSuggestionsList(),
+            _buildSuggestionsList(isDark),
 
           const SizedBox(height: 10),
 
           // Travel Date & Time
           TextField(
             controller: _dateController,
-            style: TextStyle(fontSize: 13, color: AppColors.textPrimaryOf(context)),
+            style: TextStyle(fontSize: 13, color: textPrimary),
             decoration: InputDecoration(
               isDense: true,
               labelText: 'Travel Date & Time',
-              labelStyle: TextStyle(fontSize: 12, color: AppColors.textSecondaryOf(context)),
+              labelStyle: TextStyle(fontSize: 12, color: textSecondary),
               prefixIcon: const Icon(Icons.calendar_month, color: AppColors.cyanAccent, size: 20),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderSubtle)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderSubtle)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.electricBlue, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
@@ -369,10 +384,10 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
                   padding: const EdgeInsets.only(right: 6),
                   child: ActionChip(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    label: Text(loc, style: const TextStyle(fontSize: 11, color: AppColors.navy700)),
-                    backgroundColor: AppColors.surfaceLight,
+                    label: Text(loc, style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkTextPrimary : AppColors.navy700)),
+                    backgroundColor: isDark ? Colors.white.withOpacity(0.08) : AppColors.surfaceLight,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    side: BorderSide(color: Colors.grey.shade300),
+                    side: BorderSide(color: borderSubtle),
                     onPressed: () {
                       setState(() {
                         _destinationController.text = loc;
@@ -422,16 +437,16 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
     );
   }
 
-  Widget _buildSuggestionsList() {
+  Widget _buildSuggestionsList([bool isDark = false]) {
     return Container(
       margin: const EdgeInsets.only(top: 4, bottom: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkCardBg : Colors.white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.electricBlue.withOpacity(0.4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.06),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

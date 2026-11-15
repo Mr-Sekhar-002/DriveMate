@@ -481,37 +481,46 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
                     _calculateRouteAndServerFare();
                   },
                   borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.electricBlue : Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isSelected ? AppColors.electricBlue : Colors.grey.shade300,
-                        width: isSelected ? 1.5 : 1.0,
-                      ),
-                      boxShadow: isSelected
-                          ? [BoxShadow(color: AppColors.electricBlue.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2))]
-                          : null,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(icon, color: isSelected ? Colors.white : AppColors.navy900, size: 18),
-                        const SizedBox(height: 4),
-                        Text(
-                          type.label,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? Colors.white : AppColors.navy900,
+                  child: Builder(
+                    builder: (context) {
+                      final isDark = Theme.of(context).brightness == Brightness.dark || AppColors.isDarkModeGlobal;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.electricBlue
+                              : (isDark ? Colors.white.withOpacity(0.06) : Colors.white),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.electricBlue
+                                : (isDark ? AppColors.darkBorder : Colors.grey.shade300),
+                            width: isSelected ? 1.5 : 1.0,
                           ),
+                          boxShadow: isSelected
+                              ? [BoxShadow(color: AppColors.electricBlue.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2))]
+                              : null,
                         ),
-                      ],
-                    ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(icon, color: isSelected ? Colors.white : (isDark ? Colors.white70 : AppColors.navy900), size: 18),
+                            const SizedBox(height: 4),
+                            Text(
+                              type.label,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected ? Colors.white : (isDark ? Colors.white : AppColors.navy900),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -523,23 +532,28 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
   }
 
   Widget _buildHourlyDurationSelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark || AppColors.isDarkModeGlobal;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: isDark ? AppColors.darkCardBg : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: isDark ? AppColors.darkBorder : Colors.grey.shade300),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.schedule, size: 16, color: AppColors.electricBlue),
-              SizedBox(width: 6),
+              const Icon(Icons.schedule, size: 16, color: AppColors.electricBlue),
+              const SizedBox(width: 6),
               Text(
                 'Hourly Driver Duration:',
-                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColors.navy900),
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppColors.darkTextPrimary : AppColors.navy900,
+                ),
               ),
             ],
           ),
@@ -552,9 +566,17 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: isSel ? AppColors.electricBlue : Colors.white,
-                      foregroundColor: isSel ? Colors.white : AppColors.navy900,
-                      side: BorderSide(color: isSel ? AppColors.electricBlue : Colors.grey.shade300),
+                      backgroundColor: isSel
+                          ? AppColors.electricBlue
+                          : (isDark ? Colors.white.withOpacity(0.06) : Colors.white),
+                      foregroundColor: isSel
+                          ? Colors.white
+                          : (isDark ? Colors.white : AppColors.navy900),
+                      side: BorderSide(
+                        color: isSel
+                            ? AppColors.electricBlue
+                            : (isDark ? AppColors.darkBorder : Colors.grey.shade300),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
@@ -574,8 +596,15 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
   }
 
   Widget _buildLocationCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark || AppColors.isDarkModeGlobal;
+    final cardBg = isDark ? AppColors.darkCardBg : Colors.white;
+    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.navy900;
+    final borderSubtle = isDark ? AppColors.darkBorder : Colors.grey.shade300;
+    final fieldBg = isDark ? Colors.white.withOpacity(0.06) : AppColors.surfaceLight;
+
     return Card(
       elevation: 1.5,
+      color: cardBg,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -585,13 +614,13 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.route, color: AppColors.electricBlue, size: 18),
-                    SizedBox(width: 8),
+                    const Icon(Icons.route, color: AppColors.electricBlue, size: 18),
+                    const SizedBox(width: 8),
                     Text(
                       'Pickup & Destination Selection',
-                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.navy900),
+                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: textPrimary),
                     ),
                   ],
                 ),
@@ -610,9 +639,9 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
+                  color: fieldBg,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: borderSubtle),
                 ),
                 child: Row(
                   children: [
@@ -627,7 +656,7 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
                             _pickupController.text,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.navy900),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
                           ),
                         ],
                       ),
@@ -649,9 +678,9 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
+                  color: fieldBg,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: borderSubtle),
                 ),
                 child: Row(
                   children: [
@@ -666,7 +695,7 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
                             _destController.text,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.navy900),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
                           ),
                         ],
                       ),
@@ -1361,12 +1390,17 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
   }
 
   Widget _buildPaymentMethodSelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark || AppColors.isDarkModeGlobal;
+    final cardBg = isDark ? AppColors.darkCardBg : Colors.white;
+    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimaryOf(context);
+    final borderSubtle = isDark ? AppColors.darkBorder : Colors.grey.shade300;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Payment Gateway:',
-          style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimaryOf(context)),
+          style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: textPrimary),
         ),
         const SizedBox(height: 8),
         ...PaymentMethod.values.map((method) {
@@ -1374,14 +1408,28 @@ class _HireDriverFlowScreenState extends State<HireDriverFlowScreen> {
           return Container(
             margin: const EdgeInsets.only(bottom: 6),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.cyanLight : Colors.white,
+              color: isSelected
+                  ? (isDark ? AppColors.primaryBlue.withOpacity(0.22) : AppColors.cyanLight)
+                  : cardBg,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: isSelected ? AppColors.electricBlue : Colors.grey.shade300),
+              border: Border.all(
+                color: isSelected ? AppColors.electricBlue : borderSubtle,
+                width: isSelected ? 1.5 : 1,
+              ),
             ),
             child: RadioListTile<PaymentMethod>(
               value: method,
               groupValue: _paymentMethod,
-              title: Text(method.displayName, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              title: Text(
+                method.displayName,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected
+                      ? (isDark ? AppColors.cyanAccent : AppColors.navy900)
+                      : textPrimary,
+                ),
+              ),
               activeColor: AppColors.electricBlue,
               dense: true,
               onChanged: (val) {

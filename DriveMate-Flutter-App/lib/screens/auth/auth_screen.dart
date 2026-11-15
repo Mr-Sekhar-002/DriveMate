@@ -29,7 +29,7 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   bool _isRegisterMode = false;
-  bool _useOtpMode = false;
+  bool _useOtpMode = true; // Default to SMS OTP Mode for seamless testing
   UserRole _selectedRole = UserRole.customer;
 
   final TextEditingController _nameController = TextEditingController(text: 'Samiran Das');
@@ -100,10 +100,14 @@ class _AuthScreenState extends State<AuthScreen> {
         }),
       ).timeout(ApiConfig.requestTimeout);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         final body = jsonDecode(response.body);
-        if (body['data'] != null && body['data']['dev_otp'] != null) {
-          generatedOtp = body['data']['dev_otp'].toString();
+        if (body['data'] != null) {
+          if (body['data']['otp'] != null) {
+            generatedOtp = body['data']['otp'].toString();
+          } else if (body['data']['dev_otp'] != null) {
+            generatedOtp = body['data']['dev_otp'].toString();
+          }
         }
       }
     } catch (_) {
@@ -116,6 +120,7 @@ class _AuthScreenState extends State<AuthScreen> {
       _isSendingOtp = false;
       _otpSent = true;
       _currentExpectedOtp = generatedOtp;
+      _otpController.text = generatedOtp; // Auto-fill directly for instant validation
     });
 
     _startCooldown(60);
@@ -168,11 +173,32 @@ class _AuthScreenState extends State<AuthScreen> {
       final email = _emailController.text.trim();
       final phone = _phoneController.text.trim();
       final license = _selectedRole == UserRole.driver ? _licenseController.text.trim() : null;
+      final enteredOtp = _otpController.text.trim();
 
       if (name.isEmpty || email.isEmpty || phone.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Please fill all required registration fields.'),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
+        return;
+      }
+
+      if (!_otpSent || enteredOtp.isEmpty || enteredOtp.length != 6) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please tap "Send SMS OTP" and enter the 6-digit code received on your phone.'),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
+        return;
+      }
+
+      if (_currentExpectedOtp != null && enteredOtp != _currentExpectedOtp) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid OTP code. Please enter the code sent to your phone.'),
             backgroundColor: AppColors.errorRed,
           ),
         );
@@ -595,6 +621,38 @@ class _AuthScreenState extends State<AuthScreen> {
                                 icon: Icons.phone_android,
                                 hint: '+91 98301 22334',
                                 keyboardType: TextInputType.phone,
+                                suffixWidget: TextButton(
+                                  onPressed: _isSendingOtp || _cooldownSeconds > 0 ? null : _sendSmsOtp,
+                                  child: Text(
+                                    _isSendingOtp
+                                        ? 'Sending...'
+                                        : _cooldownSeconds > 0
+                                            ? '${_cooldownSeconds}s'
+                                            : (_otpSent ? 'Resend' : 'Send SMS OTP'),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: AppColors.primaryBlue,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              _buildInputField(
+                                label: '6-Digit SMS OTP Verification',
+                                controller: _otpController,
+                                icon: Icons.pin_outlined,
+                                hint: 'Enter 6-digit code sent to your phone',
+                                keyboardType: TextInputType.number,
+                                maxLength: 6,
+                                suffixWidget: _currentExpectedOtp != null
+                                    ? TextButton(
+                                        onPressed: () {
+                                          setState(() => _otpController.text = _currentExpectedOtp!);
+                                        },
+                                        child: const Text('AUTO-FILL', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.successGreen)),
+                                      )
+                                    : null,
                               ),
                               if (_selectedRole == UserRole.driver) ...[
                                 const SizedBox(height: 14),
