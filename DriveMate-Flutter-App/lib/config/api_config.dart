@@ -14,7 +14,7 @@ class ApiConfig {
   static const String _prefKeyEnv = 'drivemate_api_environment';
 
   /// Actual physical host IPv4 address from Windows ipconfig
-  static const String lanHostIp = '192.168.0.107';
+  static const String lanHostIp = '192.168.29.150';
 
   /// Standard Apache HTTP port
   static const int apachePort = 80;

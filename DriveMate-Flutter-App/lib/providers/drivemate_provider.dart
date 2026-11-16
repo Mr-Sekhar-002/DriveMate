@@ -827,6 +827,39 @@ class DriveMateProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Automatically restores live tracking if there is an active/confirmed booking in memory
+  void restoreActiveTripFromBooking(Booking booking) {
+    final status = booking.status == BookingStatus.inProgress
+        ? TripStatus.onTrip
+        : TripStatus.assigned;
+
+    _activeTrip = Trip(
+      id: 'TRP-${booking.id}',
+      bookingId: booking.id,
+      driverId: booking.driverId ?? (_selectedDriver != null ? '${_selectedDriver!.id}' : '3'),
+      driverName: booking.driverName ?? (_selectedDriver?.name ?? 'Rajesh Kumar (Driver)'),
+      driverPhone: '+91 98112 23344',
+      vehicleModel: booking.customerCarModel ?? booking.vehicleModel ?? 'Sedan',
+      startLocation: booking.pickupLocation,
+      startLat: booking.pickupLat ?? 21.8767,
+      startLng: booking.pickupLng ?? 88.1912,
+      endLocation: booking.destination,
+      endLat: booking.destLat ?? 21.8712,
+      endLng: booking.destLng ?? 88.1824,
+      currentLat: booking.pickupLat ?? 21.8767,
+      currentLng: booking.pickupLng ?? 88.1912,
+      bearing: 45.0,
+      startTime: booking.startDate.isNotEmpty ? booking.startDate : 'Just now',
+      distanceKm: booking.distanceKm ?? 12.4,
+      fare: booking.negotiatedFare ?? booking.totalAmount,
+      status: status,
+      currentProgress: status == TripStatus.onTrip ? 0.5 : 0.05,
+      otp: booking.startOtp.isNotEmpty ? booking.startOtp : '4729',
+    );
+    startDriverLiveTracking();
+    notifyListeners();
+  }
+
   // Trip Completion & Invoice State
   TripInvoice? _currentInvoice;
   TripInvoice? get currentInvoice => _currentInvoice;
@@ -1261,6 +1294,30 @@ class DriveMateProvider with ChangeNotifier {
       // Realistic Driver Negotiation Simulation
       _simulateRealisticDriverNegotiationResponse(booking.id, initialOffer, estimatedFare);
     } else {
+      _activeTrip = Trip(
+        id: 'TRP-$bookingId',
+        bookingId: bookingId,
+        driverId: _selectedDriver != null ? '${_selectedDriver!.id}' : '3',
+        driverName: assignedDriverName ?? (_selectedDriver?.name ?? 'Rajesh Kumar (Driver)'),
+        driverPhone: '+91 98112 23344',
+        vehicleModel: customerCarModel.isNotEmpty ? customerCarModel : 'Honda City (Automatic)',
+        startLocation: pickup,
+        startLat: pickupCoords.latitude,
+        startLng: pickupCoords.longitude,
+        endLocation: destination,
+        endLat: destCoords.latitude,
+        endLng: destCoords.longitude,
+        currentLat: pickupCoords.latitude,
+        currentLng: pickupCoords.longitude,
+        bearing: 45.0,
+        startTime: 'Just now',
+        distanceKm: distanceKm > 0 ? distanceKm : 12.4,
+        fare: estimatedFare > 0 ? estimatedFare : finalFare,
+        status: TripStatus.assigned,
+        currentProgress: 0.05,
+        otp: booking.startOtp.isNotEmpty ? booking.startOtp : '4729',
+      );
+      startDriverLiveTracking();
       _customerScreen = ActiveCustomerScreen.activeTripTracking;
       showToast('Chauffeur ${assignedDriverName ?? "Assigned Chauffeur"} booked successfully at estimated fare ₹${estimatedFare.toInt()}!');
     }
@@ -1300,6 +1357,13 @@ class DriveMateProvider with ChangeNotifier {
         final realId = serverBookingId != null ? 'BK-$serverBookingId' : bookingId;
 
         _bookings = _bookings.map((b) => b.id == bookingId ? b.copyWith(id: realId, startOtp: serverOtp.isNotEmpty ? serverOtp : b.startOtp) : b).toList();
+        if (_activeTrip?.bookingId == bookingId) {
+          _activeTrip = _activeTrip!.copyWith(
+            id: 'TRP-$realId',
+            bookingId: realId,
+            otp: serverOtp.isNotEmpty ? serverOtp : _activeTrip!.otp,
+          );
+        }
         if (_activeNegotiationBooking?.id == bookingId) {
           _activeNegotiationBooking = _activeNegotiationBooking!.copyWith(id: realId, startOtp: serverOtp.isNotEmpty ? serverOtp : _activeNegotiationBooking!.startOtp);
         }
@@ -1427,30 +1491,34 @@ class DriveMateProvider with ChangeNotifier {
         return b;
       }).toList();
 
+      final targetBooking = _bookings.firstWhere((b) => b.id == bookingId, orElse: () => _bookings.first);
+      _activeTrip = Trip(
+        id: 'TRP-$bookingId',
+        bookingId: bookingId,
+        driverId: targetBooking.driverId ?? _driverProfile.id,
+        driverName: targetBooking.driverName ?? (_currentUser.role == UserRole.driver ? _driverProfile.driverName : 'Rajesh Kumar (Driver)'),
+        driverPhone: _currentUser.role == UserRole.driver ? _driverProfile.phone : '+91 98112 23344',
+        vehicleModel: targetBooking.customerCarModel ?? targetBooking.vehicleModel ?? 'Sedan',
+        startLocation: targetBooking.pickupLocation,
+        startLat: targetBooking.pickupLat,
+        startLng: targetBooking.pickupLng,
+        endLocation: targetBooking.destination,
+        endLat: targetBooking.destLat,
+        endLng: targetBooking.destLng,
+        currentLat: targetBooking.pickupLat,
+        currentLng: targetBooking.pickupLng,
+        startTime: 'Just now',
+        distanceKm: _routeDistanceKm > 0 ? _routeDistanceKm : 12.4,
+        fare: agreedFare,
+        status: TripStatus.assigned,
+        currentProgress: 0.05,
+        otp: targetBooking.startOtp.isNotEmpty ? targetBooking.startOtp : '4729',
+        bearing: 45.0,
+      );
+      startDriverLiveTracking();
+
       if (_currentUser.role == UserRole.driver) {
         _incomingDriverRequest = null;
-        final targetBooking = _bookings.firstWhere((b) => b.id == bookingId, orElse: () => _bookings.first);
-        _activeTrip = Trip(
-          id: 'TRP-${DateTime.now().millisecondsSinceEpoch % 1000}',
-          bookingId: bookingId,
-          driverId: _driverProfile.id,
-          driverName: _driverProfile.driverName,
-          driverPhone: _driverProfile.phone,
-          vehicleModel: targetBooking.customerCarModel ?? targetBooking.vehicleModel ?? 'Sedan',
-          startLocation: targetBooking.pickupLocation,
-          startLat: targetBooking.pickupLat,
-          startLng: targetBooking.pickupLng,
-          endLocation: targetBooking.destination,
-          endLat: targetBooking.destLat,
-          endLng: targetBooking.destLng,
-          startTime: 'Just now',
-          distanceKm: _routeDistanceKm > 0 ? _routeDistanceKm : 12.4,
-          fare: agreedFare,
-          status: TripStatus.driverArrived,
-          currentProgress: 0.05,
-          otp: targetBooking.startOtp,
-          bearing: 45.0,
-        );
       }
 
       notifyListeners();

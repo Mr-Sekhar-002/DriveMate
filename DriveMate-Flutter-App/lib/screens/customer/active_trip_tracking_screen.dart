@@ -59,6 +59,16 @@ class _ActiveTripTrackingScreenState extends State<ActiveTripTrackingScreen> wit
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<DriveMateProvider>();
+      if (provider.activeTrip == null) {
+        final activeBooking = provider.bookings.cast<Booking?>().firstWhere(
+          (b) => b != null && (b.status == BookingStatus.inProgress || b.status == BookingStatus.confirmed),
+          orElse: () => null,
+        );
+        if (activeBooking != null) {
+          provider.restoreActiveTripFromBooking(activeBooking);
+        }
+      }
+
       final trip = provider.activeTrip;
       if (trip != null && trip.status != TripStatus.completed) {
         provider.startDriverLiveTracking();
@@ -365,6 +375,21 @@ class _ActiveTripTrackingScreenState extends State<ActiveTripTrackingScreen> wit
                   },
                   icon: const Icon(Icons.directions_car, size: 20),
                   label: const Text('Book a Chauffeur or Car', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white24),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () => provider.navigateTo(ActiveCustomerScreen.home),
+                  icon: const Icon(Icons.home_outlined, size: 18),
+                  label: const Text('Back to Home Dashboard', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
                 ),
               ),
             ],

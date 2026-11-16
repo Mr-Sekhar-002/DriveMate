@@ -220,6 +220,13 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
           Row(
             children: BookingType.values.map((type) {
               final isSelected = _selectedServiceType == type;
+              final IconData typeIcon = switch (type) {
+                BookingType.hireDriver => Icons.airline_seat_recline_extra,
+                BookingType.rentCar => Icons.directions_car_filled,
+                BookingType.rentCarAndDriver => Icons.person_pin_circle_outlined,
+                BookingType.outstation => Icons.alt_route_rounded,
+              };
+
               return Expanded(
                 child: GestureDetector(
                   onTap: () {
@@ -231,7 +238,7 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? (isDark ? AppColors.primaryBlue : AppColors.navy900)
-                          : (isDark ? Colors.white.withOpacity(0.06) : Colors.transparent),
+                          : (isDark ? Colors.white.withOpacity(0.08) : AppColors.surfaceLight),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isSelected
@@ -243,14 +250,10 @@ class _TripSearchWidgetState extends State<TripSearchWidget> {
                     child: Column(
                       children: [
                         Icon(
-                          type == BookingType.hireDriver
-                              ? Icons.airline_seat_recline_extra
-                              : type == BookingType.rentCar
-                                  ? Icons.directions_car
-                                  : Icons.car_rental,
+                          typeIcon,
                           color: isSelected
                               ? Colors.white
-                              : (isDark ? Colors.white70 : AppColors.navy700),
+                              : (isDark ? Colors.white.withOpacity(0.85) : AppColors.navy700),
                           size: 18,
                         ),
                         const SizedBox(height: 3),
